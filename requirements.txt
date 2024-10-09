@@ -1,5 +1,5 @@
 torch==1.12.0
 torchvision==0.13.0
 gradio==3.45.0
-transformers==3.0.2
-tokenizers
+transformers==4.45.2
+tokenizers==0.20.0
