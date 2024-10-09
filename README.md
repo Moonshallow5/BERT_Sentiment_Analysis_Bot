@@ -46,3 +46,5 @@ Thus, my future implementation would involve me in finding or making a better tr
 ## 👀Live Preview
 
 Here it is! As shown in <a href="https://huggingface.co/spaces/Moonshallow5/BERT_Emotion_Detector">HuggingFace</a>
+
+Here is one of my <a href="https://github.com/Moonshallow5/BERT_Sentiment_Analysis_Bot/blob/main/confusion_matrix.png">results</a> after only 2 epochs.
