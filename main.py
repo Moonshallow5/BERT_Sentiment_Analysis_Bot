@@ -6,6 +6,10 @@ from transformers import BertTokenizer, BertForSequenceClassification
 from torch.utils.data import DataLoader
 from torch.optim import AdamW
 from tqdm import tqdm
+from sklearn.metrics import confusion_matrix, classification_report
+import numpy as np
+import seaborn as sns
+import matplotlib.pyplot as plt
 
 #df=pd.read_csv('sentiment-data/training.csv',names=['text','label'])
 df2=pd.read_csv('sentiment-data-2/Emotion_final.csv',names=['Text','Emotion'])
@@ -64,7 +68,7 @@ optimizer = AdamW(model.parameters(), lr=1e-5)
 print(test_dataset)
 
 
-epochs = 3
+epochs = 2
 device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
 model.to(device)
 
@@ -114,6 +118,8 @@ for epoch in tqdm(range(epochs)):
     total_val_loss = 0
     val_acc = 0
     total_val_samples = 0
+    all_preds = []
+    all_labels = []
 
     with torch.no_grad():  # Disable gradient computation (for validation)
         for batch in dataloader_test:
@@ -128,9 +134,12 @@ for epoch in tqdm(range(epochs)):
             logits = outputs.logits
 
             total_val_loss += loss.item()
+            
 
             # Calculate validation accuracy
             y_pred_class = torch.argmax(torch.softmax(logits, dim=1), dim=1)
+            all_preds.extend(y_pred_class.cpu().numpy())
+            all_labels.extend(labels.cpu().numpy())
             val_acc += (y_pred_class == labels).sum().item()
             total_val_samples += len(labels)
 
@@ -138,4 +147,17 @@ for epoch in tqdm(range(epochs)):
     val_acc = val_acc / total_val_samples  # Validation accuracy
     print(f"Epoch {epoch+1}/{epochs} - Validation Loss: {avg_val_loss:.4f}")
     print(f"Epoch {epoch+1}/{epochs} - Validation Accuracy: {val_acc:.4f}")
+
+print(all_labels)
+print(all_preds)
+cm = confusion_matrix(all_labels, all_preds)
+print("Confusion Matrix:")
+print(cm)
+
+# Plot confusion matrix using seaborn
+plt.figure(figsize=(8, 6))
+sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', xticklabels=id2label.values(), yticklabels=id2label.values())
+plt.xlabel('Predicted Labels')
+plt.ylabel('True Labels')
+plt.show()
 
