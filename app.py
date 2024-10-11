@@ -1,7 +1,7 @@
 import gradio as gr
 from transformers import BertTokenizer, BertForSequenceClassification
 import torch
-
+import torch.nn.functional as F  # For softmax
 # Load the trained model and tokenizer
 model = BertForSequenceClassification.from_pretrained("./saved_model")
 tokenizer = BertTokenizer.from_pretrained("./saved_model")
@@ -14,13 +14,13 @@ def predict_emotion(text):
     with torch.no_grad():
         outputs = model(**inputs)
         logits = outputs.logits
-        prediction = torch.argmax(logits, dim=1).item()
+        probabilities = F.softmax(logits, dim=1).squeeze().tolist()
 
     # Map label ids to emotions
     id2label = {0: 'sadness', 1: 'anger', 2: 'love', 3: 'suprise', 4: 'fear', 5: 'happy'}
-    emotion = id2label[prediction]
-    
-    return emotion
+    emotion_probs = {id2label[i]: prob for i, prob in enumerate(probabilities)}
+    top_emotion = max(emotion_probs, key=emotion_probs.get)
+    return f"Emotion probabilities: {emotion_probs}\n\nTop emotion: {top_emotion}"
 
 # Gradio interface
 interface = gr.Interface(fn=predict_emotion, 
